@@ -1,65 +1,9 @@
-import Image from "next/image";
-
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
-}
+'use client';import { useState, useEffect } from 'react';import Link from 'next/link';import { motion } from 'framer-motion';import { GraduationCap, Users, UserPlus, MessageSquare, ArrowRight } from 'lucide-react';import AnimatedSection from '@/components/AnimatedSection';import PersonCard from '@/components/PersonCard';import { PersonWithStats } from '@/types';import { useLang } from '@/components/LanguageProvider';
+export default function Home() { const { t } = useLang(); const [fp, setFp] = useState<PersonWithStats[]>([]); useEffect(()=>{fetch('/api/people?type=student').then(r=>r.json()).then(d=>{if(Array.isArray(d))setFp(d.slice(0,8))}).catch(()=>{})},[]);
+return (<div>
+<section className="relative overflow-hidden"><div className="absolute inset-0 bg-gradient-to-b from-neutral-100/50 to-transparent pointer-events-none"/><div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-28 sm:pb-24"><motion.div initial={{opacity:0,y:32}} animate={{opacity:1,y:0}} transition={{duration:0.8,ease:[0.22,1,0.36,1]}} className="text-center"><motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.2,duration:0.6}} className="text-sm font-medium tracking-widest text-neutral-400 uppercase mb-4">{t('site.tagline')}</motion.p><motion.h1 initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.35,duration:0.7,ease:[0.22,1,0.36,1]}} className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-neutral-900 leading-[1.1]">{t('site.title')}<br/><span className="text-neutral-400">{t('site.subtitle')}</span></motion.h1><motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.55,duration:0.6}} className="mt-5 max-w-md mx-auto text-neutral-500 text-base leading-relaxed whitespace-pre-line">{t('site.description')}</motion.p><motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.75,duration:0.5}} className="mt-8 flex items-center justify-center gap-3"><Link href="/register" className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 text-white text-sm font-medium rounded-full hover:bg-neutral-800 transition-colors"><UserPlus size={16}/>{t('home.cta_register')}<ArrowRight size={16}/></Link><Link href="/students" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-neutral-700 text-sm font-medium rounded-full border border-neutral-200 hover:bg-neutral-50 transition-colors">{t('home.cta_browse')}</Link></motion.div></motion.div></div></section>
+<section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16"><AnimatedSection><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><Link href="/students"><motion.div whileHover={{scale:1.01,y:-2}} transition={{duration:0.25}} className="group relative bg-white rounded-2xl p-6 sm:p-8 border border-neutral-200/60 hover:shadow-lg hover:shadow-neutral-200/40 hover:border-neutral-300/60 transition-all duration-300 cursor-pointer"><div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"><GraduationCap size={24} className="text-blue-600"/></div><h2 className="text-xl font-semibold text-neutral-900 mb-1">{t('home.hero.students')}</h2><p className="text-sm text-neutral-500 leading-relaxed">{t('home.hero.students_desc')}</p><ArrowRight size={18} className="absolute top-6 right-6 text-neutral-300 group-hover:text-neutral-600 group-hover:translate-x-1 transition-all duration-300"/></motion.div></Link><Link href="/teachers"><motion.div whileHover={{scale:1.01,y:-2}} transition={{duration:0.25}} className="group relative bg-white rounded-2xl p-6 sm:p-8 border border-neutral-200/60 hover:shadow-lg hover:shadow-neutral-200/40 hover:border-neutral-300/60 transition-all duration-300 cursor-pointer"><div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"><Users size={24} className="text-amber-600"/></div><h2 className="text-xl font-semibold text-neutral-900 mb-1">{t('home.hero.teachers')}</h2><p className="text-sm text-neutral-500 leading-relaxed">{t('home.hero.teachers_desc')}</p><ArrowRight size={18} className="absolute top-6 right-6 text-neutral-300 group-hover:text-neutral-600 group-hover:translate-x-1 transition-all duration-300"/></motion.div></Link></div></AnimatedSection></section>
+{fp.length>0&&(<section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24"><AnimatedSection><div className="flex items-center justify-between mb-6"><div><h2 className="text-lg font-semibold text-neutral-900">{t('home.featured')}</h2><p className="text-sm text-neutral-500 mt-0.5">{t('home.featured_desc')}</p></div><Link href="/students" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1">{t('home.featured_all')}<ArrowRight size={14}/></Link></div></AnimatedSection><div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">{fp.map((p,i)=>(<PersonCard key={p.id} person={p} index={i}/>))}</div></section>)}
+<section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24"><AnimatedSection><div className="bg-neutral-900 rounded-3xl p-8 sm:p-12 text-center"><h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">{t('home.cta')}</h2><p className="text-neutral-400 text-sm mb-6 max-w-sm mx-auto leading-relaxed">{t('home.cta_desc')}</p><Link href="/register" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-neutral-900 text-sm font-semibold rounded-full hover:bg-neutral-100 transition-colors"><UserPlus size={16}/>{t('home.cta_btn')}<ArrowRight size={16}/></Link></div></AnimatedSection></section>
+<footer className="border-t border-neutral-200/50 py-8"><div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4"><div className="flex items-center gap-2 text-sm text-neutral-400"><span className="font-medium text-neutral-500">{t('site.title')}</span><span>{t('home.brand')}</span></div><div className="flex items-center gap-4 text-sm text-neutral-400"><Link href="/suggest" className="hover:text-neutral-600 transition-colors flex items-center gap-1"><MessageSquare size={14}/>{t('home.footer_suggest')}</Link><Link href="/register" className="hover:text-neutral-600 transition-colors flex items-center gap-1"><UserPlus size={14}/>{t('home.footer_register')}</Link></div></div></footer>
+</div>);}
