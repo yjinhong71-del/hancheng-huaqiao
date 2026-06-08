@@ -67,7 +67,7 @@ export default function MessagesPage() {
             setActiveChat(withId);
             setMobileView('chat');
           }, 100);
-        }
+    if (!withId || loading) return;
       });
     }
   }, [conversations]);
