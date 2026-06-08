@@ -55,7 +55,7 @@ export default function MessagesPage() {
   const selectChat = (partnerId: string) => { setActiveChat(partnerId); fetchMessages(partnerId); setMobileView('chat'); };
 
   const sendMessage = async () => {
-    if (!input.trim() || !activeChat) return;
+  const sendMessage = async () => { alert("click"); if (!input.trim() || !activeChat) return;
     const r = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver_id: activeChat, content: input.trim(), is_anonymous: isAnonymous ? 1 : 0 }) });
     if (r.ok) { const msg = await r.json(); setMessages(prev => [...prev, msg]); setInput(""); fetchConversations(); }
     else { const d = await r.json(); alert(d.error || "发送失败"); }
