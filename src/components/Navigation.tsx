@@ -63,7 +63,7 @@ export default function Navigation() {
   return (
     <>
       <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)] transition-colors duration-500 glass-nav rounded-full ${scrolled ? 'shadow-[0_0_0_0.5px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.12)]' : 'shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.03)]'}`}>
+        className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)] transition-colors duration-500 solid-nav rounded-full ${scrolled ? 'shadow-[0_0_0_0.5px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.12)]' : 'shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.03)]'}`}>
         <div className="px-4">
           <div className="flex items-center justify-between h-11 gap-2">
             <Link href="/" className="flex items-center gap-2 group shrink-0">

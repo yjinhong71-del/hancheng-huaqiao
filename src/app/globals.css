@@ -74,3 +74,10 @@ body {
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
 }
+
+/* Solid navigation – no blur, fully opaque */
+.solid-nav {
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+}
