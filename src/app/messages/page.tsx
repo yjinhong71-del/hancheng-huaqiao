@@ -72,8 +72,8 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (!user?.personId) return;
-    let es = null;
-    let reconnectTimer;
+    let es: EventSource | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
     const connect = () => {
       es = new EventSource('/api/messages/stream');
       es.onmessage = (e) => {
@@ -97,7 +97,7 @@ export default function MessagesPage() {
 
   useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const selectChat = (partnerId) => {
+  const selectChat = (partnerId: string) => {
     setActiveChat(partnerId);
     fetchMessages(partnerId);
     setMobileView('chat');
