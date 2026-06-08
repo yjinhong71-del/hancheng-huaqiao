@@ -118,8 +118,7 @@ export default function MessagesPage() {
     });
     if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
     if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
-      setMessages(prev => [...prev, msg]);
-      setInput('');
+    const msg = await r.json();
       fetchConversations();
     }
   };
