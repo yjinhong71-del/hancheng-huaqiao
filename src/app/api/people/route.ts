@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
   const people = db.prepare(q).all(p) as any[];
   if (!isLoggedIn && !isAdminReq) {
     return NextResponse.json(people.map((p: any) => ({
-      ...p, avg_appearance: 0, avg_personality: 0, avg_grades: 0, avg_talent: 0, avg_popularity: 0, overall_avg: 0
+      ...p, avg_appearance: 0, avg_personality: 0, avg_grades: 0, avg_talent: 0, avg_popularity: 0, overall_avg: 0,
+      like_count: 0, dislike_count: 0, evaluation_count: 0
     })));
   }
   return NextResponse.json(people);

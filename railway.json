@@ -8,5 +8,10 @@
     "startCommand": "npm run start",
     "healthcheckPath": "/",
     "healthcheckTimeout": 100
+  },
+  "volumes": {
+    "data": {
+      "mountPath": "/data"
+    }
   }
 }

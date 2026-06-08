@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { existsSync, mkdirSync } from "node:fs";
 
-const DATA_DIR = process.env.DATA_DIR || "/tmp/data";
+const DATA_DIR = process.env.DATA_DIR || "/data";
 const DB_PATH = path.join(DATA_DIR, 'database.sqlite');
 
 let db: Database.Database | null = null;
@@ -29,6 +29,7 @@ export function getDb(): Database.Database {
       bio TEXT DEFAULT '',
       password_hash TEXT NOT NULL,
       status TEXT DEFAULT 'approved' CHECK(status IN ('pending', 'approved', 'rejected')),
+      rejection_reason TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
@@ -43,6 +44,7 @@ export function getDb(): Database.Database {
       popularity INTEGER DEFAULT 0,
       comment TEXT DEFAULT '',
       approved INTEGER DEFAULT 0,
+      is_anonymous INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE,
       FOREIGN KEY (evaluator_id) REFERENCES people(id) ON DELETE SET NULL
@@ -63,6 +65,10 @@ export function getDb(): Database.Database {
       created_at TEXT DEFAULT (datetime('now')),
       read INTEGER DEFAULT 0
     );
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT DEFAULT ''
+    );
     CREATE INDEX IF NOT EXISTS idx_evaluations_person ON evaluations(person_id);
     CREATE INDEX IF NOT EXISTS idx_likes_person ON likes(person_id);
     CREATE INDEX IF NOT EXISTS idx_people_type ON people(type);
@@ -75,10 +81,22 @@ export function getDb(): Database.Database {
     db.exec("ALTER TABLE people ADD COLUMN status TEXT DEFAULT 'approved'");
     db.prepare("UPDATE people SET status='approved' WHERE status IS NULL").run();
   }
+  if (!cols.some((c: any) => c.name === 'rejection_reason')) {
+    db.exec("ALTER TABLE people ADD COLUMN rejection_reason TEXT DEFAULT ''");
+  }
 
   const ecols = db.prepare("PRAGMA table_info(evaluations)").all() as any[];
   if (!ecols.some((c: any) => c.name === 'evaluator_id')) {
     db.exec("ALTER TABLE evaluations ADD COLUMN evaluator_id TEXT DEFAULT NULL REFERENCES people(id) ON DELETE SET NULL");
+  }
+  if (!ecols.some((c: any) => c.name === 'is_anonymous')) {
+    db.exec("ALTER TABLE evaluations ADD COLUMN is_anonymous INTEGER DEFAULT 0");
+  }
+
+  // Ensure settings table has site_declaration default
+  const existing = db.prepare("SELECT value FROM settings WHERE key='site_declaration'").get() as any;
+  if (!existing) {
+    db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('site_declaration', '')").run();
   }
 
   return db;

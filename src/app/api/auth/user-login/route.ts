@@ -16,5 +16,9 @@ export async function POST(r: NextRequest) {
   s.name = p.name;
   s.status = p.status;
   await s.save();
-  return NextResponse.json({ personId: p.id, name: p.name, status: p.status });
+  const resp: any = { personId: p.id, name: p.name, status: p.status };
+  if (p.status === 'rejected') {
+    resp.rejection_reason = p.rejection_reason || '';
+  }
+  return NextResponse.json(resp);
 }

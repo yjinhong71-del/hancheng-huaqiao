@@ -134,6 +134,22 @@ const dict: Record<string, Record<Language, string>> = {
   'lang.zh_TW': { 'zh-CN': '繁體中文', 'zh-TW': '繁體中文', en: 'Traditional Chinese', ko: '중국어 번체' },
   'lang.en': { 'zh-CN': 'English', 'zh-TW': 'English', en: 'English', ko: 'English' },
   'lang.ko': { 'zh-CN': '한국어', 'zh-TW': '한국어', en: '한국어', ko: '한국어' },
+
+  'person.anonymous': { 'zh-CN': '匿名评论', 'zh-TW': '匿名評論', en: 'Anonymous', ko: '익명' },
+  'person.anonymous_hint': { 'zh-CN': '勾选后你的名字不会公开显示', 'zh-TW': '勾選後你的名字不會公開顯示', en: 'Your name will not be shown publicly', ko: '이름이 공개되지 않습니다' },
+  'admin.eval_search': { 'zh-CN': '搜索用户名...', 'zh-TW': '搜尋用戶名...', en: 'Search username...', ko: '사용자 검색...' },
+  'admin.eval_anonymous_badge': { 'zh-CN': '匿名', 'zh-TW': '匿名', en: 'Anonymous', ko: '익명' },
+  'admin.eval_approve': { 'zh-CN': '通过', 'zh-TW': '通過', en: 'Approve', ko: '승인' },
+  'admin.eval_unapprove': { 'zh-CN': '撤回', 'zh-TW': '撤回', en: 'Unapprove', ko: '철회' },
+  'admin.reject_title': { 'zh-CN': '拒绝理由', 'zh-TW': '拒絕理由', en: 'Rejection Reason', ko: '거절 사유' },
+  'admin.reject_placeholder': { 'zh-CN': '填写拒绝理由（选填）...', 'zh-TW': '填寫拒絕理由（選填）...', en: 'Enter rejection reason (optional)...', ko: '거절 사유 입력 (선택)...' },
+  'admin.reject_confirm': { 'zh-CN': '确认拒绝', 'zh-TW': '確認拒絕', en: 'Confirm Reject', ko: '거절 확인' },
+  'admin.declaration_title': { 'zh-CN': '网站声明', 'zh-TW': '網站聲明', en: 'Site Declaration', ko: '사이트 공지' },
+  'admin.declaration_save': { 'zh-CN': '保存', 'zh-TW': '儲存', en: 'Save', ko: '저장' },
+  'login.rejected_title': { 'zh-CN': '入驻申请被拒绝', 'zh-TW': '入駐申請被拒絕', en: 'Application Rejected', ko: '신청이 거절되었습니다' },
+  'login.rejected_reason': { 'zh-CN': '拒绝理由', 'zh-TW': '拒絕理由', en: 'Rejection reason', ko: '거절 사유' },
+  'login.rejected_register': { 'zh-CN': '重新入驻', 'zh-TW': '重新入駐', en: 'Register Again', ko: '다시 등록' },
+  'register.self_declaration': { 'zh-CN': '本人声明：此账号为本人创建，若发现代替他人注册，账号将被删除', 'zh-TW': '本人聲明：此帳號為本人創建，若發現代替他人註冊，帳號將被刪除', en: 'I declare that I am creating my own account. If found registering on behalf of others, my account will be deleted.', ko: '본인은 스스로의 계정을 생성함을 선언합니다. 타인을 대신하여 등록한 것이 발견될 경우 계정이 삭제됩니다.' },
 };
 
 const LANG_ORDER: Language[] = ['zh-TW', 'ko', 'zh-CN', 'en'];

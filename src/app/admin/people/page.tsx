@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Plus, Search, Edit3, Trash2, ArrowLeft, GraduationCap, Check, X } from 'lucide-react';
 import { PersonWithStats } from '@/types';
+import { useLang } from '@/components/LanguageProvider';
 
 export default function AdminPeoplePage() {
+  const { t } = useLang();
   const router = useRouter();
   const [ap, setAp] = useState<PersonWithStats[]>([]);
   const [sq, setSq] = useState('');
@@ -14,6 +16,7 @@ export default function AdminPeoplePage() {
   const [st, setSt] = useState<'approved' | 'pending' | 'rejected'>('approved');
   const [l, setL] = useState(true);
   const [di, setDi] = useState<string | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ personId: string; reason: string } | null>(null);
 
   const fpp = async () => {
     const params = new URLSearchParams();
@@ -46,6 +49,16 @@ export default function AdminPeoplePage() {
     setAp(p => p.filter(x => x.id !== id));
   };
 
+  const handleRejectConfirm = async () => {
+    if (!rejectModal) return;
+    await fetch('/api/people/approve', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: rejectModal.personId, status: 'rejected', reason: rejectModal.reason })
+    });
+    setAp(p => p.filter(x => x.id !== rejectModal.personId));
+    setRejectModal(null);
+  };
+
   const fp = sq.trim() ? ap.filter(p => p.name.toLowerCase().includes(sq.toLowerCase()) || p.class_name.includes(sq)) : ap;
 
   return (
@@ -60,40 +73,40 @@ export default function AdminPeoplePage() {
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input type="text" placeholder="搜索姓名或班级..." value={sq} onChange={e => setSq(e.target.value)}
-              className="w-48 pl-9 pr-3 py-2 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-200 transition-all" />
+              className="w-48 pl-9 pr-3 py-2 text-sm glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
           </div>
-          <div className="flex bg-neutral-100 rounded-xl p-0.5">
-            {['all', 'student', 'teacher'].map(t => (
-              <button key={t} onClick={() => setFt(t as typeof ft)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${ft === t ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}>
-                {t === 'all' ? '全部' : t === 'student' ? '学生' : '教师'}
+          <div className="flex bg-black/[0.04] rounded-full p-0.5">
+            {['all', 'student', 'teacher'].map(tp => (
+              <button key={tp} onClick={() => setFt(tp as typeof ft)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${ft === tp ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)]' : 'text-neutral-500 hover:text-neutral-700'}`}>
+                {tp === 'all' ? '全部' : tp === 'student' ? '学生' : '教师'}
               </button>
             ))}
           </div>
-          <div className="flex bg-neutral-100 rounded-xl p-0.5">
+          <div className="flex bg-black/[0.04] rounded-full p-0.5">
             {[{ k: 'approved' as const, l: '已通过' }, { k: 'pending' as const, l: '待审核' }, { k: 'rejected' as const, l: '已拒绝' }].map(s => (
               <button key={s.k} onClick={() => setSt(s.k)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${st === s.k ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}>
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${st === s.k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)]' : 'text-neutral-500 hover:text-neutral-700'}`}>
                 {s.l}
               </button>
             ))}
           </div>
         </div>
-        <Link href="/admin/people/new" className="flex items-center gap-1.5 px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-xl hover:bg-neutral-800 transition-all">
+        <Link href="/admin/people/new" className="flex items-center gap-1.5 px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-full hover:bg-neutral-800 transition-all duration-200 active:scale-[0.98]">
           <Plus size={16} />新增人物
         </Link>
       </div>
 
       {l ? (
-        <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => (<div key={i} className="h-14 bg-white rounded-xl border border-neutral-200/60 animate-pulse" />))}</div>
+        <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => (<div key={i} className="h-14 glass-card rounded-2xl animate-shimmer" />))}</div>
       ) : fp.length === 0 ? (
         <div className="text-center py-16"><GraduationCap size={40} className="mx-auto text-neutral-300 mb-3" /><p className="text-sm text-neutral-500">暂无匹配人物</p></div>
       ) : (
         <div className="space-y-1.5">
           {fp.map(p => (
             <motion.div key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className={`flex items-center gap-3 bg-white rounded-xl border px-4 py-3 ${p.status === 'pending' ? 'border-amber-200 bg-amber-50/40' : p.status === 'rejected' ? 'border-red-200 bg-red-50/30' : 'border-neutral-200/60'}`}>
-              <div className="w-10 h-10 rounded-lg bg-neutral-100 overflow-hidden shrink-0">
+              className={`flex items-center gap-3 glass-card rounded-2xl px-4 py-3 ${p.status === 'pending' ? '!border-amber-200 !bg-amber-50/60' : p.status === 'rejected' ? '!border-red-200 !bg-red-50/50' : ''}`}>
+              <div className="w-10 h-10 rounded-xl bg-black/[0.03] overflow-hidden shrink-0">
                 {p.photo_url ? <img src={p.photo_url} alt="" className="w-full h-full object-cover" /> :
                   <div className="w-full h-full flex items-center justify-center text-sm text-neutral-400 font-medium">{p.name.charAt(0)}</div>}
               </div>
@@ -110,12 +123,12 @@ export default function AdminPeoplePage() {
                     <button onClick={() => approve(p.id, 'approved')} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-all" title="通过">
                       <Check size={16} />
                     </button>
-                    <button onClick={() => approve(p.id, 'rejected')} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-all" title="拒绝">
+                    <button onClick={() => setRejectModal({ personId: p.id, reason: '' })} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-all" title="拒绝">
                       <X size={16} />
                     </button>
                   </>
                 )}
-                <Link href={`/admin/people/${p.id}/edit`} className="p-2 text-neutral-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                <Link href={`/admin/people/${p.id}/edit`} className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-black/[0.03] rounded-lg transition-all">
                   <Edit3 size={16} />
                 </Link>
                 {di === p.id ? (
@@ -129,6 +142,25 @@ export default function AdminPeoplePage() {
               </div>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Reject modal */}
+      {rejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={() => setRejectModal(null)}>
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.2, ease: [0.22,1,0.36,1] }}
+            className="glass-card rounded-2xl p-6 max-w-sm w-full mx-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-neutral-900 mb-4">{t('admin.reject_title')}</h3>
+            <textarea value={rejectModal.reason} onChange={e => setRejectModal(p => p ? { ...p, reason: e.target.value } : null)}
+              placeholder={t('admin.reject_placeholder')} rows={4} maxLength={500}
+              className="w-full px-4 py-3 text-sm bg-white/60 border border-black/[0.06] rounded-xl focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all resize-none mb-4" />
+            <div className="flex items-center gap-2 justify-end">
+              <button onClick={() => setRejectModal(null)} className="px-4 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-700 rounded-full transition-colors">取消</button>
+              <button onClick={handleRejectConfirm} className="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-full hover:bg-red-700 transition-all duration-200 active:scale-[0.98]">
+                {t('admin.reject_confirm')}
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

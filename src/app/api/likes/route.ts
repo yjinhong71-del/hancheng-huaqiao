@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
 import crypto from 'crypto';
+import { getCurrentUser } from '@/lib/auth';
 
 function gh(r: NextRequest): string {
   const ip = r.headers.get('x-forwarded-for') || r.headers.get('x-real-ip') || 'unknown';
@@ -9,6 +10,10 @@ function gh(r: NextRequest): string {
 }
 
 export async function POST(r: NextRequest) {
+  const user = await getCurrentUser();
+  if (!user || user.status !== 'approved') {
+    return NextResponse.json({ error: '请登录后操作' }, { status: 401 });
+  }
   const { person_id, type } = await r.json();
   if (!person_id || !type) return NextResponse.json({ error: '缺少参数' }, { status: 400 });
   if (!['like', 'dislike'].includes(type)) return NextResponse.json({ error: '类型无效' }, { status: 400 });

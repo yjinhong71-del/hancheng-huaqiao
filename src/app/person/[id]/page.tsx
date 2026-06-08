@@ -6,7 +6,7 @@ import { ThumbsUp, ThumbsDown, Star, MessageSquare, ArrowLeft, ChevronRight, Loc
 import RadarChart from '@/components/RadarChart';
 import RatingStars from '@/components/RatingStars';
 import AnimatedSection from '@/components/AnimatedSection';
-import { PersonWithStats, Evaluation, DIMENSION_LABELS } from '@/types';
+import { PersonWithStats, Evaluation, DIMENSION_LABELS, TEACHER_DIMENSION_LABELS } from '@/types';
 import { useLang } from '@/components/LanguageProvider';
 
 export default function PersonDetailPage() {
@@ -23,12 +23,15 @@ export default function PersonDetailPage() {
   const [sf, setSf] = useState(false);
   const [es, setEs] = useState<Record<string, number>>({ appearance: 0, personality: 0, grades: 0, talent: 0, popularity: 0 });
   const [ec, setEc] = useState('');
+  const [anonymous, setAnonymous] = useState(true);
   const [sb, setSb] = useState(false);
   const [eok, setEok] = useState(false);
   const [user, setUser] = useState<{ loggedIn: boolean; personId?: string; name?: string; status?: string } | null>(null);
 
+  const dimLabels = p?.type === 'teacher' ? TEACHER_DIMENSION_LABELS : DIMENSION_LABELS;
+
   const dlabel = (dim: string) => {
-    const entry = DIMENSION_LABELS[dim as keyof typeof DIMENSION_LABELS];
+    const entry = dimLabels[dim as keyof typeof dimLabels];
     return entry ? (entry[lang] || entry['zh-CN']) : dim;
   };
 
@@ -62,10 +65,12 @@ export default function PersonDetailPage() {
   }, [user]);
 
   const hv = async (ty: 'like' | 'dislike') => {
+    if (!user?.loggedIn) { router.push('/login'); return; }
     const r = await fetch('/api/likes', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ person_id: id, type: ty })
     });
+    if (r.status === 401) { router.push('/login'); return; }
     const d = await r.json();
     setLc(d.like_count);
     setDc(d.dislike_count);
@@ -76,11 +81,11 @@ export default function PersonDetailPage() {
     setSb(true);
     const r = await fetch('/api/evaluations', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ person_id: id, ...es, comment: ec })
+      body: JSON.stringify({ person_id: id, ...es, comment: ec, is_anonymous: anonymous ? 1 : 0 })
     });
     if (r.ok) {
       setEok(true); setSf(false);
-      setTimeout(() => { fe(); fp(); setEok(false); setEs({ appearance: 0, personality: 0, grades: 0, talent: 0, popularity: 0 }); setEc(''); }, 1500);
+      setTimeout(() => { fe(); fp(); setEok(false); setEs({ appearance: 0, personality: 0, grades: 0, talent: 0, popularity: 0 }); setEc(''); setAnonymous(true); }, 1500);
     }
     setSb(false);
   };
@@ -88,8 +93,8 @@ export default function PersonDetailPage() {
   if (l) return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
       <div className="animate-pulse space-y-6">
-        <div className="h-4 bg-neutral-100 rounded w-24" />
-        <div className="flex gap-6"><div className="w-48 h-48 bg-neutral-100 rounded-2xl" /><div className="flex-1 space-y-3"><div className="h-8 bg-neutral-100 rounded w-32" /><div className="h-4 bg-neutral-100 rounded w-48" /></div></div>
+        <div className="h-4 bg-black/[0.03] rounded w-24" />
+        <div className="flex gap-6"><div className="w-48 h-48 bg-black/[0.03] rounded-2xl" /><div className="flex-1 space-y-3"><div className="h-8 bg-black/[0.03] rounded w-32" /><div className="h-4 bg-black/[0.03] rounded w-48" /></div></div>
       </div>
     </div>
   );
@@ -106,9 +111,9 @@ export default function PersonDetailPage() {
       </motion.button>
 
       <AnimatedSection>
-        <div className="bg-white rounded-2xl border border-neutral-200/60 p-5 sm:p-6">
+        <div className="glass-card rounded-3xl p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row gap-6">
-            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl bg-neutral-100 overflow-hidden shrink-0">
+            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl bg-black/[0.03] overflow-hidden shrink-0">
               {p.photo_url ? <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" /> :
                 <div className="w-full h-full flex items-center justify-center"><span className="text-4xl text-neutral-400 font-bold">{p.name.charAt(0)}</span></div>}
             </div>
@@ -126,16 +131,18 @@ export default function PersonDetailPage() {
                 <span className="text-xl font-bold text-neutral-900">{p.overall_avg > 0 ? p.overall_avg.toFixed(1) : '-'}</span>
                 <span className="text-sm text-neutral-400">({p.evaluation_count} {t('person.eval_count')})</span>
               </div>
-              <div className="flex items-center gap-2 mt-4">
-                <motion.button whileTap={{ scale: 0.9 }} whileHover={{ scale: 1.05 }} onClick={() => hv('like')}
-                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all ${uv === 'like' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-neutral-50 text-neutral-600 border border-neutral-200 hover:bg-neutral-100'}`}>
-                  <ThumbsUp size={16} fill={uv === 'like' ? '#2563eb' : 'none'} />{t('person.like')} {lc}
-                </motion.button>
-                <motion.button whileTap={{ scale: 0.9 }} whileHover={{ scale: 1.05 }} onClick={() => hv('dislike')}
-                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all ${uv === 'dislike' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-neutral-50 text-neutral-600 border border-neutral-200 hover:bg-neutral-100'}`}>
-                  <ThumbsDown size={16} fill={uv === 'dislike' ? '#dc2626' : 'none'} />{t('person.dislike')} {dc}
-                </motion.button>
-              </div>
+              {canEval && (
+                <div className="flex items-center gap-2 mt-4">
+                  <motion.button whileTap={{ scale: 0.9 }} whileHover={{ scale: 1.05 }} onClick={() => hv('like')}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${uv === 'like' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'glass-card rounded-full hover:shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.04)]'}`}>
+                    <ThumbsUp size={16} fill={uv === 'like' ? '#2563eb' : 'none'} />{t('person.like')} {lc}
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.9 }} whileHover={{ scale: 1.05 }} onClick={() => hv('dislike')}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${uv === 'dislike' ? 'bg-red-50 text-red-600 border border-red-200' : 'glass-card rounded-full hover:shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.04)]'}`}>
+                    <ThumbsDown size={16} fill={uv === 'dislike' ? '#dc2626' : 'none'} />{t('person.dislike')} {dc}
+                  </motion.button>
+                </div>
+              )}
             </div>
             <div className="hidden sm:flex items-center justify-center shrink-0"><RadarChart data={rd} size={200} /></div>
           </div>
@@ -146,7 +153,7 @@ export default function PersonDetailPage() {
       {canView ? (
         <>
           <AnimatedSection delay={0.1}>
-            <div className="mt-6 bg-white rounded-2xl border border-neutral-200/60 p-5">
+            <div className="mt-6 glass-card rounded-3xl p-5">
               <h2 className="text-sm font-semibold text-neutral-700 mb-4">{t('person.dimensions')}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                 {['appearance', 'personality', 'grades', 'talent', 'popularity'].map(d => (
@@ -161,9 +168,9 @@ export default function PersonDetailPage() {
           </AnimatedSection>
 
           <AnimatedSection delay={0.15}>
-            <div className="mt-6 bg-white rounded-2xl border border-neutral-200/60 p-5">
+            <div className="mt-6 glass-card rounded-3xl p-5">
               {!sf ? (
-                <button onClick={() => setSf(true)} className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                <button onClick={() => setSf(true)} className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">
                   <MessageSquare size={16} />{t('person.write_eval')}<ChevronRight size={16} />
                 </button>
               ) : (
@@ -173,8 +180,8 @@ export default function PersonDetailPage() {
                   ) : (
                     <>
                       <h3 className="text-sm font-semibold text-neutral-700">{t('person.submit_eval')}</h3>
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3"><p className="text-xs text-amber-700 leading-relaxed">{t('person.disclaimer')}</p></div>
-                      {Object.entries(DIMENSION_LABELS).map(([k]) => (
+                      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3"><p className="text-xs text-amber-700 leading-relaxed">{t('person.disclaimer')}</p></div>
+                      {Object.entries(dimLabels).map(([k]) => (
                         <div key={k} className="flex items-center justify-between">
                           <span className="text-sm text-neutral-600">{dlabel(k)}</span>
                           <RatingStars value={es[k] || 0} onChange={v => setEs(pv => ({ ...pv, [k]: v }))} size={18} />
@@ -183,13 +190,22 @@ export default function PersonDetailPage() {
                       <div>
                         <label className="text-xs text-neutral-500 mb-1.5 block">{t('person.comment_label')}</label>
                         <textarea value={ec} onChange={e => setEc(e.target.value)} placeholder={t('person.comment_placeholder')} rows={3} maxLength={500}
-                          className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-200 focus:border-neutral-300 transition-all resize-none" />
+                          className="w-full px-4 py-3 text-sm bg-white/60 border border-black/[0.06] rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all resize-none" />
                       </div>
+                      <label className="flex items-center gap-3 cursor-pointer py-1">
+                        <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${anonymous ? 'bg-neutral-900' : 'bg-black/[0.15]'}`}>
+                          <motion.div animate={{ x: anonymous ? 22 : 2 }} transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
+                        </div>
+                        <span className="text-sm text-neutral-600">{t('person.anonymous')}</span>
+                        <input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} className="hidden" />
+                      </label>
+                      <p className="text-xs text-neutral-400 -mt-2">{t('person.anonymous_hint')}</p>
                       <div className="flex items-center gap-2">
-                        <button onClick={hse} disabled={sb} className="px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-xl hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                        <button onClick={hse} disabled={sb} className="px-5 py-2.5 bg-neutral-900 text-white text-sm font-semibold rounded-full hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98]">
                           {sb ? t('person.submitting') : t('person.submit_btn')}
                         </button>
-                        <button onClick={() => setSf(false)} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors">{t('person.cancel')}</button>
+                        <button onClick={() => setSf(false)} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors rounded-full">{t('person.cancel')}</button>
                       </div>
                     </>
                   )}
@@ -202,7 +218,7 @@ export default function PersonDetailPage() {
             <div className="mt-6">
               <h2 className="text-lg font-semibold text-neutral-900 mb-4">{t('person.evaluations')} <span className="text-neutral-400 font-normal text-sm">{evs.length} {t('person.eval_count')}</span></h2>
               {evs.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-neutral-200/60 p-8 text-center">
+                <div className="glass-card rounded-3xl p-8 text-center">
                   <MessageSquare size={32} className="mx-auto text-neutral-300 mb-3" />
                   <p className="text-sm text-neutral-500">{t('person.no_eval')}</p>
                 </div>
@@ -210,12 +226,12 @@ export default function PersonDetailPage() {
                 <div className="space-y-3">
                   {evs.map((ei, i) => (
                     <motion.div key={ei.id} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.05 }}
-                      className="bg-white rounded-2xl border border-neutral-200/60 p-4">
+                      className="glass-card rounded-3xl p-4 hover:shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.04)] transition-shadow duration-300">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-semibold text-neutral-700">{ei.evaluator_name || t('person.early_user')}</span>
                         <span className="text-xs text-neutral-400">{new Date(ei.created_at).toLocaleDateString('zh-CN')}</span>
                       </div>
-                      <div className="flex items-center gap-4 mb-2">
+                      <div className="flex items-center gap-4 mb-2 flex-wrap">
                         {['appearance', 'personality', 'grades', 'talent', 'popularity'].map(d => {
                           const v = ei[d as keyof typeof ei] as number;
                           if (!v) return null;
@@ -232,11 +248,11 @@ export default function PersonDetailPage() {
         </>
       ) : (
         <AnimatedSection delay={0.1}>
-          <div className="mt-6 bg-white rounded-2xl border border-neutral-200/60 p-8 text-center">
+          <div className="mt-6 glass-card rounded-3xl p-8 text-center">
             <Lock size={40} className="mx-auto text-neutral-300 mb-4" />
             <h3 className="text-lg font-semibold text-neutral-800 mb-2">{t('person.login_to_view')}</h3>
             <p className="text-sm text-neutral-500 mb-5">{t('person.login_to_view_desc')}</p>
-            <button onClick={() => router.push('/login')} className="px-5 py-2.5 bg-neutral-900 text-white text-sm font-medium rounded-xl hover:bg-neutral-800 transition-all">
+            <button onClick={() => router.push('/login')} className="px-5 py-2.5 bg-neutral-900 text-white text-sm font-semibold rounded-full hover:bg-neutral-800 transition-all duration-200 active:scale-[0.98]">
               {t('person.login_btn')}
             </button>
           </div>

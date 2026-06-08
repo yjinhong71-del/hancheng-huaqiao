@@ -12,10 +12,11 @@ export async function GET(r: NextRequest) {
   }
   const db = getDb();
   const evals = db.prepare(`
-    SELECT e.*, COALESCE(p.name, '早期用户') as evaluator_name
+    SELECT e.*, 
+      CASE WHEN e.is_anonymous = 1 THEN '匿名用戶' ELSE COALESCE(p.name, '早期用戶') END as evaluator_name
     FROM evaluations e
     LEFT JOIN people p ON e.evaluator_id = p.id
-    WHERE e.person_id = ?
+    WHERE e.person_id = ? AND e.approved = 1
     ORDER BY e.created_at DESC
   `).all(pid);
   return NextResponse.json(evals);
@@ -24,18 +25,18 @@ export async function GET(r: NextRequest) {
 export async function POST(r: NextRequest) {
   const user = await getCurrentUser();
   if (!user || user.status !== 'approved') return NextResponse.json({ error: '请登录后评价' }, { status: 401 });
-  const { person_id, appearance, personality, grades, talent, popularity, comment } = await r.json();
+  const { person_id, appearance, personality, grades, talent, popularity, comment, is_anonymous } = await r.json();
   if (!person_id) return NextResponse.json({ error: '缺少人物ID' }, { status: 400 });
   const db = getDb();
   const target = db.prepare('SELECT id, status FROM people WHERE id=?').get(person_id) as any;
   if (!target) return NextResponse.json({ error: '人物不存在' }, { status: 404 });
   if (target.status !== 'approved') return NextResponse.json({ error: '该人物尚未通过审核' }, { status: 400 });
   const id = uuid();
-  db.prepare('INSERT INTO evaluations (id, person_id, evaluator_id, appearance, personality, grades, talent, popularity, comment, approved) VALUES (?,?,?,?,?,?,?,?,?,1)').run(
-    id, person_id, user.personId, appearance || 0, personality || 0, grades || 0, talent || 0, popularity || 0, comment || ''
+  db.prepare('INSERT INTO evaluations (id, person_id, evaluator_id, appearance, personality, grades, talent, popularity, comment, approved, is_anonymous) VALUES (?,?,?,?,?,?,?,?,?,1,?)').run(
+    id, person_id, user.personId, appearance || 0, personality || 0, grades || 0, talent || 0, popularity || 0, comment || '', is_anonymous ? 1 : 0
   );
   const result = db.prepare(`
-    SELECT e.*, COALESCE(p.name, '早期用户') as evaluator_name
+    SELECT e.*, COALESCE(p.name, '早期用戶') as evaluator_name
     FROM evaluations e
     LEFT JOIN people p ON e.evaluator_id = p.id
     WHERE e.id = ?
