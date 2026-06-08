@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, GraduationCap, Users, UserPlus, MessageSquare, Edit3, Shield, Globe, LogIn, LogOut, Gamepad2 } from 'lucide-react';
+import { Menu, X, GraduationCap, Users, UserPlus, MessageSquare, Edit3, Shield, Globe, LogIn, LogOut, Gamepad2, MessageCircle } from 'lucide-react';
 import { useLang, LANG_ORDER } from '@/components/LanguageProvider';
 import { Language } from '@/types';
 
@@ -55,6 +55,7 @@ export default function Navigation() {
     { href: '/teachers', label: t('nav.teachers'), icon: Users },
     { href: '/register', label: t('nav.register'), icon: UserPlus },
     { href: '/edit-profile', label: t('nav.edit'), icon: Edit3 },
+    { href: '/messages', label: '私訊', icon: MessageCircle },
     { href: '/game', label: '遊戲', icon: Gamepad2 },
     { href: '/suggest', label: t('nav.suggest'), icon: MessageSquare },
   ];

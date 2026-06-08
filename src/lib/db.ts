@@ -81,6 +81,17 @@ export function getDb(): Database.Database {
       FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
     );
     CREATE INDEX IF NOT EXISTS idx_game_scores_score ON game_scores(score DESC);
+    CREATE TABLE IF NOT EXISTS messages (
+      id TEXT PRIMARY KEY,
+      sender_id TEXT NOT NULL,
+      receiver_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      read INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (sender_id) REFERENCES people(id) ON DELETE CASCADE,
+      FOREIGN KEY (receiver_id) REFERENCES people(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id, receiver_id);
   `);
 
   // Run migrations for existing databases
