@@ -30,22 +30,26 @@ export async function GET(r: NextRequest) {
 export async function POST(r: NextRequest) {
   const user = await getCurrentUser();
   if (!user || user.status !== 'approved') {
-    return NextResponse.json({ error: '请登录后提交分数' }, { status: 401 });
+    return NextResponse.json({ error: '請登錄後提交分數' }, { status: 401 });
   }
   const { score } = await r.json();
   if (!score || typeof score !== 'number' || score < 0) {
-    return NextResponse.json({ error: '无效分数' }, { status: 400 });
+    return NextResponse.json({ error: '無效分數' }, { status: 400 });
   }
   const db = getDb();
 
-  // Anti-spam: 5-minute cooldown
-  const recent = db.prepare("SELECT id FROM game_scores WHERE person_id=? AND created_at > datetime('now', '-5 minutes')").get(user.personId) as any;
-  if (recent) {
-    return NextResponse.json({ error: '5分钟内已提交过分数' }, { status: 429 });
-  }
+  // Check existing best score for this user
+  const existing = db.prepare('SELECT id, score FROM game_scores WHERE person_id=?').get(user.personId) as any;
 
-  const id = uuid();
-  db.prepare('INSERT INTO game_scores (id, person_id, score) VALUES (?,?,?)').run(id, user.personId, score);
+  if (existing) {
+    // Only update if new score is higher
+    if (score > existing.score) {
+      db.prepare('UPDATE game_scores SET score=?, created_at=datetime(\'now\') WHERE id=?').run(score, existing.id);
+    }
+  } else {
+    const id = uuid();
+    db.prepare('INSERT INTO game_scores (id, person_id, score) VALUES (?,?,?)').run(id, user.personId, score);
+  }
 
   const best = db.prepare('SELECT MAX(score) as best FROM game_scores WHERE person_id=?').get(user.personId) as any;
   const rank = db.prepare('SELECT COUNT(*) + 1 as rank FROM game_scores WHERE score > ?').get(best.best) as any;

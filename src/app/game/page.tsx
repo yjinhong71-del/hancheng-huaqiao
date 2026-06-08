@@ -112,7 +112,7 @@ export default function GamePage() {
   const [myRank, setMyRank] = useState<MyRank>(null);
   const [user, setUser] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const scoreRef = useRef(0);
 
@@ -184,17 +184,17 @@ export default function GamePage() {
     scoreRef.current = 0;
     setGameOver(false);
     setWon(false);
-    setSubmitted(false);
+    // reset
   };
 
   const submitScore = async () => {
-    if (!user?.loggedIn || submitted) return;
+    if (!user?.loggedIn) return;
     setSubmitting(true);
     const r = await fetch('/api/game/scores', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ score })
     });
-    const d = await r.json(); if (r.ok) { setSubmitted(true); fetchScores(); } else { alert(d.error || '提交失敗'); }
+    const d = await r.json(); if (r.ok) { fetchScores(); } else { alert(d.error || '提交失敗'); }
     setSubmitting(false);
   };
 
@@ -239,7 +239,7 @@ export default function GamePage() {
                     {won ? '🎉 你達到了 2048！' : '遊戲結束'}
                   </p>
                   {user?.loggedIn ? (
-                    submitted ? (
+                    false ? (
                       <p className="text-xs text-green-600 font-medium">分數已提交 ✓</p>
                     ) : (
                       <button onClick={submitScore} disabled={submitting}
