@@ -22,7 +22,8 @@ export default function MessagesPage() {
 
   const fetchUser = useCallback(async () => {
     const r = await fetch('/api/auth/user-session');
-    if (r.ok) {
+    if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
+    if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
       const d = await r.json();
       if (!d.loggedIn) { router.push('/login'); return; }
       setUser(d);
@@ -110,13 +111,13 @@ export default function MessagesPage() {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || !activeChat) return;
+    if (!input.trim()) return; if (!activeChat) { alert('請先選擇對話'); return; }
     const r = await fetch('/api/messages', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ receiver_id: activeChat, content: input.trim(), is_anonymous: isAnonymous ? 1 : 0 })
     });
-    if (r.ok) {
-      const msg = await r.json();
+    if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
+    if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
       setMessages(prev => [...prev, msg]);
       setInput('');
       fetchConversations();
