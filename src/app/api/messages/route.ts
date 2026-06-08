@@ -9,7 +9,7 @@ export async function POST(r: NextRequest) {
   if (!user || user.status !== 'approved') {
     return NextResponse.json({ error: '請登錄' }, { status: 401 });
   }
-  const { receiver_id, content } = await r.json();
+  const { receiver_id, content, is_anonymous } = await r.json();
   if (!receiver_id || !content?.trim()) {
     return NextResponse.json({ error: '缺少參數' }, { status: 400 });
   }
@@ -19,11 +19,11 @@ export async function POST(r: NextRequest) {
 
   const id = uuid();
   const now = new Date().toISOString();
-  db.prepare('INSERT INTO messages (id, sender_id, receiver_id, content, created_at) VALUES (?,?,?,?,?)').run(
+  db.prepare('INSERT INTO messages (id, sender_id, receiver_id, content, is_anonymous, created_at) VALUES (?,?,?,?,?,?)').run(
     id, user.personId, receiver_id, content.trim(), now
   );
 
-  const msg = { id, sender_id: user.personId, sender_name: user.name, receiver_id, content: content.trim(), read: 0, created_at: now };
+  const msg = { id, sender_id: user.personId, sender_name: user.name, receiver_id, content: content.trim(), is_anonymous: is_anonymous ? 1 : 0, read: 0, created_at: now };
 
   // Notify receiver via SSE
   getEmitter().emit(receiver_id, { type: 'new_message', message: msg });
@@ -43,7 +43,7 @@ export async function GET(r: NextRequest) {
 
   const db = getDb();
   const messages = db.prepare(`
-    SELECT m.*, p.name as sender_name
+    SELECT m.*, CASE WHEN m.is_anonymous = 1 THEN '匿名用戶' ELSE p.name END as sender_name
     FROM messages m
     JOIN people p ON m.sender_id = p.id
     WHERE (m.sender_id=? AND m.receiver_id=?) OR (m.sender_id=? AND m.receiver_id=?)

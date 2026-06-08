@@ -13,6 +13,7 @@ export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
@@ -80,7 +81,7 @@ export default function MessagesPage() {
     if (!input.trim() || !activeChat) return;
     const r = await fetch('/api/messages', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ receiver_id: activeChat, content: input.trim() })
+      body: JSON.stringify({ receiver_id: activeChat, content: input.trim(), is_anonymous: isAnonymous })
     });
     if (r.ok) {
       const msg = await r.json();

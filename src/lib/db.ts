@@ -90,6 +90,7 @@ export function getDb(): Database.Database {
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (sender_id) REFERENCES people(id) ON DELETE CASCADE,
       FOREIGN KEY (receiver_id) REFERENCES people(id) ON DELETE CASCADE
+      is_anonymous INTEGER DEFAULT 0,
     );
     CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id, receiver_id);
   `);
@@ -109,6 +110,10 @@ export function getDb(): Database.Database {
     db.exec("ALTER TABLE evaluations ADD COLUMN evaluator_id TEXT DEFAULT NULL REFERENCES people(id) ON DELETE SET NULL");
   }
   if (!ecols.some((c: any) => c.name === 'is_anonymous')) {
+  const mcols = db.prepare("PRAGMA table_info(messages)").all() as any[];
+  if (mcols.length > 0 && !mcols.some((c: any) => c.name === 'is_anonymous')) {
+    db.exec("ALTER TABLE messages ADD COLUMN is_anonymous INTEGER DEFAULT 0");
+  }
     db.exec("ALTER TABLE evaluations ADD COLUMN is_anonymous INTEGER DEFAULT 0");
   }
 
