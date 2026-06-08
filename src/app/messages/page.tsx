@@ -45,11 +45,10 @@ export default function MessagesPage() {
 
   useEffect(() => { fetchUser().then(() => fetchConversations()); }, [fetchUser, fetchConversations]);
 
-  // Auto-select from URL param — create conversation if not exists
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const withId = p.get('with');
-    if (!withId || !conversations.length) return;
+    if (!withId || loading) return;
     const exists = conversations.find(c => c.partner_id === withId);
     if (exists) {
       setActiveChat(withId);
@@ -63,21 +62,6 @@ export default function MessagesPage() {
             partner_photo: person.photo_url || '', last_message: '',
             last_time: '', last_sender_id: '', unread: 0
           }, ...prev]);
-          setTimeout(() => {
-            setActiveChat(withId);
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const withId = p.get('with');
-    if (!withId || loading) return;
-    const exists = conversations.find(c => c.partner_id === withId);
-    if (exists) {
-      setActiveChat(withId);
-      fetchMessages(withId);
-      setMobileView('chat');
-    } else {
-      fetch(`/api/people/${withId}`).then(r => r.json()).then(person => {
-        if (person.name) {
-          setConversations(prev => [{ partner_id: withId, partner_name: person.name, partner_photo: person.photo_url || '', last_message: '', last_time: '', last_sender_id: '', unread: 0 }, ...prev]);
           setActiveChat(withId);
           fetchMessages(withId);
           setMobileView('chat');
@@ -86,18 +70,17 @@ export default function MessagesPage() {
     }
   }, [conversations, loading]);
 
-  // SSE connection
   useEffect(() => {
     if (!user?.personId) return;
-    let es: EventSource | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout>;
+    let es = null;
+    let reconnectTimer;
     const connect = () => {
       es = new EventSource('/api/messages/stream');
       es.onmessage = (e) => {
         try {
           const data = JSON.parse(e.data);
           if (data.type === 'new_message') {
-            const msg = data.message as Message;
+            const msg = data.message;
             if (activeChat && (msg.sender_id === activeChat || msg.receiver_id === activeChat)) {
               setMessages(prev => [...prev, msg]);
               if (activeChat !== '__anonymous__') fetch(`/api/messages/read?with=${activeChat}`, { method: 'PUT' });
@@ -114,7 +97,7 @@ export default function MessagesPage() {
 
   useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const selectChat = (partnerId: string) => {
+  const selectChat = (partnerId) => {
     setActiveChat(partnerId);
     fetchMessages(partnerId);
     setMobileView('chat');
@@ -194,7 +177,6 @@ export default function MessagesPage() {
       </AnimatedSection>
       <AnimatedSection delay={0.1}>
         <div className="glass-card rounded-3xl overflow-hidden" style={{ height: 'calc(100vh - 220px)', minHeight: '500px' }}>
-          {/* Desktop */}
           <div className="hidden md:flex h-full">
             <div className="w-[280px] shrink-0 border-r border-black/[0.06] flex flex-col">
               <div className="p-4 border-b border-black/[0.04]"><h3 className="text-sm font-semibold text-neutral-700">對話</h3></div>
@@ -228,8 +210,6 @@ export default function MessagesPage() {
               )}
             </div>
           </div>
-
-          {/* Mobile */}
           <div className="md:hidden h-full flex flex-col">
             {mobileView === 'list' ? (
               <>
