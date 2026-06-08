@@ -73,6 +73,14 @@ export function getDb(): Database.Database {
     CREATE INDEX IF NOT EXISTS idx_likes_person ON likes(person_id);
     CREATE INDEX IF NOT EXISTS idx_people_type ON people(type);
     CREATE INDEX IF NOT EXISTS idx_people_class ON people(class_name);
+    CREATE TABLE IF NOT EXISTS game_scores (
+      id TEXT PRIMARY KEY,
+      person_id TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_game_scores_score ON game_scores(score DESC);
   `);
 
   // Run migrations for existing databases
