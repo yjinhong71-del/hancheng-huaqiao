@@ -163,7 +163,7 @@ export default function GamePage() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [move]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent) => { e.preventDefault();
     const t = e.touches[0];
     touchStart.current = { x: t.clientX, y: t.clientY };
   };
@@ -192,9 +192,9 @@ export default function GamePage() {
     setSubmitting(true);
     const r = await fetch('/api/game/scores', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ score: scoreRef.current })
+      body: JSON.stringify({ score })
     });
-    if (r.ok) { setSubmitted(true); fetchScores(); }
+    const d = await r.json(); if (r.ok) { setSubmitted(true); fetchScores(); } else { alert(d.error || '提交失敗'); }
     setSubmitting(false);
   };
 
@@ -217,7 +217,7 @@ export default function GamePage() {
               </button>
             </div>
 
-            <div className="bg-black/[0.03] rounded-2xl p-2 sm:p-3 select-none"
+            <div className="bg-black/[0.03] rounded-2xl p-2 sm:p-3 select-none touch-none"
               onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
               <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                 {grid.map((row, ri) =>
