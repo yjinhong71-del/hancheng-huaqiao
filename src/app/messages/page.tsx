@@ -18,6 +18,7 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const messagesEnd = useRef<HTMLDivElement>(null);
+  const composingRef = useRef(false);
 
   const fetchUser = useCallback(async () => {
     const r = await fetch('/api/auth/user-session');
@@ -158,7 +159,7 @@ export default function MessagesPage() {
   const ChatInput = () => (
     <div className="p-3 sm:p-4 border-t border-black/[0.04] flex items-center gap-2">
       <input type="text" value={input} onChange={e => setInput(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) sendMessage(); }}
+        onCompositionStart={() => { composingRef.current = true; }} onCompositionEnd={() => { composingRef.current = false; }} onKeyDown={e => { if (e.key === 'Enter' && !composingRef.current) sendMessage(); }}
         placeholder={activeChat === '__anonymous__' ? '回覆匿名訊息...' : '輸入訊息...'}
         className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
       <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
