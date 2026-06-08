@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Send, MessageCircle, User } from 'lucide-react';
 import AnimatedSection from '@/components/AnimatedSection';
 
 type Conversation = { partner_id: string; partner_name: string; partner_photo: string; last_message: string; last_time: string; last_sender_id: string; unread: number };
-type Message = { id: string; sender_id: string; sender_name: string; receiver_id: string; content: string; created_at: string; read: number };
+type Message = { id: string; sender_id: string; sender_name: string; receiver_id: string; content: string; created_at: string; read: number; is_anonymous?: number };
 
 export default function MessagesPage() {
   const router = useRouter();
@@ -18,6 +18,7 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const messagesEnd = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
 
   const fetchUser = useCallback(async () => {
     const r = await fetch('/api/auth/user-session');
@@ -70,6 +71,7 @@ export default function MessagesPage() {
   }, [user?.personId]);
 
   useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => { const withId = searchParams.get('with'); if (withId) selectChat(withId); }, [searchParams]);
 
   const selectChat = (partnerId: string) => {
     setActiveChat(partnerId);
@@ -158,6 +160,7 @@ export default function MessagesPage() {
                   <div className="p-4 border-t border-black/[0.04] flex items-center gap-2">
                     <input type="text" value={input} onChange={e => setInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+                    <label className="flex items-center gap-1.5 text-[11px] text-neutral-500 cursor-pointer shrink-0"><input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="w-3.5 h-3.5 rounded border-black/[0.15]" />匿名</label>
                       placeholder="輸入訊息..." className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
                     <button onClick={sendMessage} className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors active:scale-[0.95]">
                       <Send size={16} />
@@ -233,6 +236,7 @@ export default function MessagesPage() {
                     placeholder="輸入訊息..." className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
                   <button onClick={sendMessage} className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors active:scale-[0.95]">
                     <Send size={16} />
+                    <label className="flex items-center gap-1.5 text-[11px] text-neutral-500 cursor-pointer shrink-0"><input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="w-3.5 h-3.5 rounded border-black/[0.15]" />匿名</label>
                   </button>
                 </div>
               </div>
