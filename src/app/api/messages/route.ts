@@ -15,6 +15,12 @@ export async function POST(r: NextRequest) {
   }
   const db = getDb();
   const target = db.prepare('SELECT id FROM people WHERE id=? AND status=\'approved\'').get(receiver_id);
+  let actualReceiverId = receiver_id;
+  if (receiver_id === '__anonymous__') {
+    const lastAnon = db.prepare('SELECT sender_id FROM messages WHERE receiver_id=? AND is_anonymous=1 ORDER BY created_at DESC LIMIT 1').get(user.personId) as any;
+    if (!lastAnon) return NextResponse.json({ error: '無法回覆' }, { status: 400 });
+    actualReceiverId = lastAnon.sender_id;
+  }
   if (!target) return NextResponse.json({ error: '用戶不存在' }, { status: 404 });
 
   const id = uuid();
@@ -40,6 +46,10 @@ export async function GET(r: NextRequest) {
   }
   const withId = new URL(r.url).searchParams.get('with');
   if (!withId) return NextResponse.json({ error: '缺少with參數' }, { status: 400 });
+  if (withId === '__anonymous__') {
+    const msgs = db.prepare(`SELECT m.*, '匿名' as sender_name FROM messages m WHERE m.receiver_id=? AND m.is_anonymous=1 UNION ALL SELECT m.*, p.name as sender_name FROM messages m JOIN people p ON m.sender_id=p.id WHERE m.sender_id=? AND m.receiver_id IN (SELECT sender_id FROM messages WHERE receiver_id=? AND is_anonymous=1) ORDER BY created_at DESC LIMIT 100`).all(user.personId, user.personId, user.personId) as any[];
+    return NextResponse.json(msgs.reverse());
+  }
 
   const db = getDb();
   const messages = db.prepare(`
