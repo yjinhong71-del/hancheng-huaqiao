@@ -71,7 +71,7 @@ export default function MessagesPage() {
   }, [user?.personId]);
 
   useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-  useEffect(() => { const p = new URLSearchParams(window.location.search); const withId = p.get('with'); if (withId) selectChat(withId); }, []);
+  useEffect(() => { const p = new URLSearchParams(window.location.search); const withId = p.get('with'); if (!withId || !conversations.length) return; const exists = conversations.find(c => c.partner_id === withId); if (exists) { selectChat(withId); } else { fetch(`/api/people/${withId}`).then(r => r.json()).then(person => { if (person.name) { setConversations(prev => [{ partner_id: withId, partner_name: person.name, partner_photo: person.photo_url || '', last_message: '', last_time: '', last_sender_id: '', unread: 0 }, ...prev]); setTimeout(() => selectChat(withId), 100); } }); } }, [conversations]);
 
   const selectChat = (partnerId: string) => {
     setActiveChat(partnerId);
