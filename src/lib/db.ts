@@ -111,14 +111,12 @@ export function getDb(): Database.Database {
   }
   try { db.exec("ALTER TABLE messages ADD COLUMN is_anonymous INTEGER DEFAULT 0"); } catch {}
   try { db.exec("ALTER TABLE evaluations ADD COLUMN is_anonymous INTEGER DEFAULT 0"); } catch {}
-  }
 
   // Ensure settings table has site_declaration default
   const existing = db.prepare("SELECT value FROM settings WHERE key='site_declaration'").get() as any;
   if (!existing) {
     db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('site_declaration', '')").run();
   }
-
   return db;
 }
 
