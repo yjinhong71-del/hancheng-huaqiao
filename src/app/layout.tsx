@@ -6,6 +6,13 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "漢城華僑中學 – 人物評價",
   description: "漢城華僑中學人物評價平台",

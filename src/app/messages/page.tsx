@@ -102,7 +102,7 @@ function ChatInput({
         }}
         onKeyDown={handleKeyDown}
         placeholder={activeChat === '__anonymous__' ? '回复匿名消息...' : '输入消息...'}
-        className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all"
+        className="flex-1 px-4 py-2.5 text-base bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all"
       />
       <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
         <input
@@ -137,6 +137,18 @@ export default function MessagesPage() {
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const messagesEnd = useRef<HTMLDivElement>(null);
   const composingRef = useRef(false);
+
+  // 移动端：监听浏览器返回按钮，回到对话列表
+  useEffect(() => {
+    const handlePopState = () => {
+      if (mobileView === 'chat') {
+        setMobileView('list');
+        setActiveChat(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [mobileView]);
   const handledWithRef = useRef<string | null>(null);
 
   const fetchUser = useCallback(async () => {
@@ -184,6 +196,7 @@ export default function MessagesPage() {
       setActiveChat(withId);
       fetchMessages(withId);
       setMobileView('chat');
+      window.history.pushState({ mobileView: 'chat' }, '');
       handledWithRef.current = withId;
     } else {
       fetch(`/api/people/${withId}`)
@@ -205,6 +218,7 @@ export default function MessagesPage() {
             setActiveChat(withId);
             fetchMessages(withId);
             setMobileView('chat');
+      window.history.pushState({ mobileView: 'chat' }, '');
       handledWithRef.current = withId;
           }
         });
@@ -254,6 +268,7 @@ export default function MessagesPage() {
     setActiveChat(partnerId);
     fetchMessages(partnerId);
     setMobileView('chat');
+    window.history.pushState({ mobileView: 'chat' }, '');
   };
 
   const sendMessage = async () => {
