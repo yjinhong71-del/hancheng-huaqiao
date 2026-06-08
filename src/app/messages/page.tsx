@@ -57,8 +57,8 @@ export default function MessagesPage() {
   const sendMessage = async () => {
     if (!input.trim() || !activeChat) return;
     const r = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver_id: activeChat, content: input.trim(), is_anonymous: isAnonymous ? 1 : 0 }) });
-    if (r.ok) { setMessages(prev => [...prev, await r.json()]); setInput(''); fetchConversations(); }
-    else { const d = await r.json(); alert(d.error || '发送失败'); }
+    if (r.ok) { const msg = await r.json(); setMessages(prev => [...prev, msg]); setInput(""); fetchConversations(); }
+    else { const d = await r.json(); alert(d.error || "发送失败"); }
   };
 
   const activeConversation = conversations.find(c => c.partner_id === activeChat);
