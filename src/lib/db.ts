@@ -109,12 +109,8 @@ export function getDb(): Database.Database {
   if (!ecols.some((c: any) => c.name === 'evaluator_id')) {
     db.exec("ALTER TABLE evaluations ADD COLUMN evaluator_id TEXT DEFAULT NULL REFERENCES people(id) ON DELETE SET NULL");
   }
-  const mcols = db.prepare("PRAGMA table_info(messages)").all() as any[];
-  if (mcols.length > 0 && !mcols.some((c: any) => c.name === 'is_anonymous')) {
-    db.exec("ALTER TABLE messages ADD COLUMN is_anonymous INTEGER DEFAULT 0");
-  }
-  if (!ecols.some((c: any) => c.name === 'is_anonymous')) {
-    db.exec("ALTER TABLE evaluations ADD COLUMN is_anonymous INTEGER DEFAULT 0");
+  try { db.exec("ALTER TABLE messages ADD COLUMN is_anonymous INTEGER DEFAULT 0"); } catch {}
+  try { db.exec("ALTER TABLE evaluations ADD COLUMN is_anonymous INTEGER DEFAULT 0"); } catch {}
   }
 
   // Ensure settings table has site_declaration default
