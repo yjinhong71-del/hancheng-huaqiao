@@ -17,7 +17,7 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const messagesEnd = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputValue = useRef("");
 
   const fetchUser = useCallback(async () => {
     const r = await fetch('/api/auth/user-session');
@@ -84,7 +84,7 @@ export default function MessagesPage() {
   };
 
   const sendMessage = async () => {
-    const text = inputRef.current?.value?.trim();
+    const text = inputValue.current?.trim();
     if (!text || !activeChat) return;
     const r = await fetch('/api/messages', {
       method: 'POST',
@@ -94,7 +94,7 @@ export default function MessagesPage() {
     if (r.ok) {
       const msg = await r.json();
       setMessages(prev => [...prev, msg]);
-      if (inputRef.current) inputRef.current.value = '';
+      inputValue.current = ""; document.querySelectorAll("input[placeholder*='輸入']").forEach(el => { el.value = ""; }); document.querySelectorAll("input[placeholder*='输入']").forEach(el => { el.value = ""; });
       fetchConversations();
     } else {
       const d = await r.json();
@@ -162,7 +162,7 @@ export default function MessagesPage() {
                     <div ref={messagesEnd} />
                   </div>
                   <div className="p-4 border-t border-black/[0.04] flex items-center gap-2 relative z-10">
-                    <input ref={inputRef} type="text" defaultValue=""
+                    <input onChange={e => { inputValue.current = e.target.value; }} type="text" defaultValue=""
                       placeholder={activeChat === '__anonymous__' ? '回复匿名消息...' : '输入消息...'}
                       className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
                     <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
@@ -204,7 +204,7 @@ export default function MessagesPage() {
                   <div ref={messagesEnd} />
                 </div>
                 <div className="p-3 border-t border-black/[0.04] flex items-center gap-2 pb-safe relative z-10">
-                  <input ref={inputRef} type="text" defaultValue=""
+                  <input onChange={e => { inputValue.current = e.target.value; }} type="text" defaultValue=""
                     placeholder={activeChat === '__anonymous__' ? '回复匿名消息...' : '输入消息...'}
                     className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
                   <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
