@@ -137,6 +137,7 @@ export default function MessagesPage() {
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const messagesEnd = useRef<HTMLDivElement>(null);
   const composingRef = useRef(false);
+  const handledWithRef = useRef<string | null>(null);
 
   const fetchUser = useCallback(async () => {
     const r = await fetch('/api/auth/user-session');
@@ -177,11 +178,13 @@ export default function MessagesPage() {
     const p = new URLSearchParams(window.location.search);
     const withId = p.get('with');
     if (!withId || loading) return;
+    if (handledWithRef.current === withId && activeChat) return;
     const exists = conversations.find(c => c.partner_id === withId);
     if (exists) {
       setActiveChat(withId);
       fetchMessages(withId);
       setMobileView('chat');
+      handledWithRef.current = withId;
     } else {
       fetch(`/api/people/${withId}`)
         .then(r => r.json())
@@ -202,6 +205,7 @@ export default function MessagesPage() {
             setActiveChat(withId);
             fetchMessages(withId);
             setMobileView('chat');
+      handledWithRef.current = withId;
           }
         });
     }
