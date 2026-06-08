@@ -14,7 +14,6 @@ export default function MessagesPage() {
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [isComposing, setIsComposing] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
@@ -159,7 +158,7 @@ export default function MessagesPage() {
   const ChatInput = () => (
     <div className="p-3 sm:p-4 border-t border-black/[0.04] flex items-center gap-2">
       <input type="text" value={input} onChange={e => setInput(e.target.value)}
-        onCompositionStart={() => setIsComposing(true)} onCompositionEnd={() => setIsComposing(false)} onKeyDown={e => { if (e.key === 'Enter' && !isComposing) sendMessage(); }}
+        onKeyDown={e => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) sendMessage(); }}
         placeholder={activeChat === '__anonymous__' ? '回覆匿名訊息...' : '輸入訊息...'}
         className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
       <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
