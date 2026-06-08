@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ThumbsUp, ThumbsDown, Star, MessageSquare, ArrowLeft, ChevronRight, Lock, MessageCircle } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Star, MessageSquare, ArrowLeft, ChevronRight, Lock } from 'lucide-react';
 import RadarChart from '@/components/RadarChart';
 import RatingStars from '@/components/RatingStars';
 import AnimatedSection from '@/components/AnimatedSection';
@@ -141,7 +141,6 @@ export default function PersonDetailPage() {
                     className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${uv === 'dislike' ? 'bg-red-50 text-red-600 border border-red-200' : 'glass-card rounded-full hover:shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.04)]'}`}>
                     <ThumbsDown size={16} fill={uv === 'dislike' ? '#dc2626' : 'none'} />{t('person.dislike')} {dc}
                   </motion.button>
-                <motion.button whileTap={{scale:0.9}} whileHover={{scale:1.05}} onClick={() => router.push(`/messages?with=${id}`)} className="glass-card rounded-full px-4 py-2 text-sm font-medium text-neutral-600 hover:text-black hover:shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.04)] transition-colors duration-150 flex items-center gap-1.5"><MessageCircle size={16} />私訊</motion.button>
                 </div>
               )}
             </div>
