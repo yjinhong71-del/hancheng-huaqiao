@@ -104,12 +104,6 @@ export default function MessagesPage() {
     setMobileView('chat');
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !composingRef.current) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -168,9 +162,7 @@ export default function MessagesPage() {
   const ChatInput = () => (
     <>
       <input type="text" value={input} onChange={e => setInput(e.target.value)}
-        onCompositionStart={() => { composingRef.current = true; }}
-        onCompositionEnd={() => { composingRef.current = false; }}
-        onKeyDown={handleKeyDown}
+        placeholder={activeChat === '__anonymous__' ? '回覆匿名訊息...' : '輸入訊息...'}
         placeholder={activeChat === '__anonymous__' ? '回复匿名消息...' : '输入消息...'}
         className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
       <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
