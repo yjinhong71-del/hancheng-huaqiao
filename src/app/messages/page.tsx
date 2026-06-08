@@ -38,9 +38,7 @@ export default function MessagesPage() {
   const fetchMessages = useCallback(async (partnerId: string) => {
     const r = await fetch(`/api/messages?with=${partnerId}`);
     if (r.ok) setMessages(await r.json());
-    if (partnerId !== '__anonymous__') {
-      await fetch(`/api/messages/read?with=${partnerId}`, { method: 'PUT' });
-    }
+    if (partnerId !== '__anonymous__') await fetch(`/api/messages/read?with=${partnerId}`, { method: 'PUT' });
     fetchConversations();
   }, [fetchConversations]);
 
@@ -81,7 +79,7 @@ export default function MessagesPage() {
         try {
           const data = JSON.parse(e.data);
           if (data.type === 'new_message') {
-            const msg = data.message;
+            const msg = data.message as Message;
             if (activeChat && (msg.sender_id === activeChat || msg.receiver_id === activeChat)) {
               setMessages(prev => [...prev, msg]);
               if (activeChat !== '__anonymous__') fetch(`/api/messages/read?with=${activeChat}`, { method: 'PUT' });
@@ -102,6 +100,13 @@ export default function MessagesPage() {
     setActiveChat(partnerId);
     fetchMessages(partnerId);
     setMobileView('chat');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !composingRef.current) {
+      e.preventDefault();
+      sendMessage();
+    }
   };
 
   const sendMessage = async () => {
@@ -138,36 +143,18 @@ export default function MessagesPage() {
           <button key={c.partner_id} onClick={() => selectChat(c.partner_id)}
             className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-black/[0.02] transition-colors ${activeChat === c.partner_id ? 'bg-black/[0.04]' : ''}`}>
             <div className="w-10 h-10 rounded-full bg-black/[0.04] flex items-center justify-center shrink-0">
-              {c.partner_photo ? <img src={c.partner_photo} className="w-full h-full rounded-full object-cover" alt="" /> :
-                <User size={18} className="text-neutral-400" />}
+              {c.partner_photo ? <img src={c.partner_photo} className="w-full h-full rounded-full object-cover" alt="" /> : <User size={18} className="text-neutral-400" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-black truncate">{c.partner_name}</span>
                 {c.unread > 0 && <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0 ml-1">{c.unread}</span>}
               </div>
-              <p className="text-xs text-neutral-500 truncate mt-0.5">
-                {c.last_sender_id === user?.personId ? '你: ' : ''}{c.last_message || '開始聊天...'}
-              </p>
+              <p className="text-xs text-neutral-500 truncate mt-0.5">{c.last_sender_id === user?.personId ? '你: ' : ''}{c.last_message || '開始聊天...'}</p>
             </div>
           </button>
         ))
       )}
-    </div>
-  );
-
-  const ChatInput = () => (
-    <div className="p-3 sm:p-4 border-t border-black/[0.04] flex items-center gap-2">
-      <input type="text" value={input} onChange={e => setInput(e.target.value)}
-        onCompositionStart={() => { composingRef.current = true; }} onCompositionEnd={() => { composingRef.current = false; }} onKeyDown={e => { if (e.key === 'Enter' && !composingRef.current) sendMessage(); }}
-        placeholder={activeChat === '__anonymous__' ? '回覆匿名訊息...' : '輸入訊息...'}
-        className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
-      <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
-        <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="w-3.5 h-3.5 rounded" />匿名
-      </label>
-      <button onClick={sendMessage} className="p-2.5 sm:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors active:scale-[0.95]">
-        <Send size={16} />
-      </button>
     </div>
   );
 
@@ -186,20 +173,27 @@ export default function MessagesPage() {
             <div className="flex-1 flex flex-col min-w-0">
               {activeChat && activeConversation ? (
                 <>
-                  <div className="p-4 border-b border-black/[0.04]">
-                    <span className="text-sm font-semibold text-black">{activeConversation.partner_name}</span>
-                  </div>
+                  <div className="p-4 border-b border-black/[0.04]"><span className="text-sm font-semibold text-black">{activeConversation.partner_name}</span></div>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {messages.map(m => (
                       <div key={m.id} className={`flex ${m.sender_id === user?.personId ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${m.sender_id === user?.personId ? 'bg-blue-500 text-white rounded-br-md' : 'bg-black/[0.05] text-black rounded-bl-md'}`}>
-                          {m.content}
-                        </div>
+                        <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${m.sender_id === user?.personId ? 'bg-blue-500 text-white rounded-br-md' : 'bg-black/[0.05] text-black rounded-bl-md'}`}>{m.content}</div>
                       </div>
                     ))}
                     <div ref={messagesEnd} />
                   </div>
-                  <ChatInput />
+                  <div className="p-4 border-t border-black/[0.04] flex items-center gap-2">
+                    <input type="text" value={input} onChange={e => setInput(e.target.value)}
+                      onCompositionStart={() => { composingRef.current = true; }}
+                      onCompositionEnd={() => { composingRef.current = false; }}
+                      onKeyDown={handleKeyDown}
+                      placeholder={activeChat === '__anonymous__' ? '回覆匿名訊息...' : '輸入訊息...'}
+                      className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
+                    <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
+                      <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="w-3.5 h-3.5 rounded" />匿名
+                    </label>
+                    <button onClick={sendMessage} className="p-2.5 sm:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors active:scale-[0.95]"><Send size={16} /></button>
+                  </div>
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center">
@@ -220,23 +214,29 @@ export default function MessagesPage() {
             ) : (
               <div className="flex flex-col h-full">
                 <div className="p-3 border-b border-black/[0.04] flex items-center gap-3">
-                  <button onClick={() => { setMobileView('list'); setActiveChat(null); }}
-                    className="p-1.5 text-neutral-500 hover:text-black rounded-full transition-colors">
-                    <ArrowLeft size={20} />
-                  </button>
+                  <button onClick={() => { setMobileView('list'); setActiveChat(null); }} className="p-1.5 text-neutral-500 hover:text-black rounded-full transition-colors"><ArrowLeft size={20} /></button>
                   <span className="text-sm font-semibold text-black">{activeConversation?.partner_name}</span>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   {messages.map(m => (
                     <div key={m.id} className={`flex ${m.sender_id === user?.personId ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${m.sender_id === user?.personId ? 'bg-blue-500 text-white rounded-br-md' : 'bg-black/[0.05] text-black rounded-bl-md'}`}>
-                        {m.content}
-                      </div>
+                      <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${m.sender_id === user?.personId ? 'bg-blue-500 text-white rounded-br-md' : 'bg-black/[0.05] text-black rounded-bl-md'}`}>{m.content}</div>
                     </div>
                   ))}
                   <div ref={messagesEnd} />
                 </div>
-                <ChatInput />
+                <div className="p-3 border-t border-black/[0.04] flex items-center gap-2 pb-safe">
+                  <input type="text" value={input} onChange={e => setInput(e.target.value)}
+                    onCompositionStart={() => { composingRef.current = true; }}
+                    onCompositionEnd={() => { composingRef.current = false; }}
+                    onKeyDown={handleKeyDown}
+                    placeholder={activeChat === '__anonymous__' ? '回覆匿名訊息...' : '輸入訊息...'}
+                    className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
+                  <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
+                    <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="w-3.5 h-3.5 rounded" />匿名
+                  </label>
+                  <button onClick={sendMessage} className="p-2.5 sm:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors active:scale-[0.95]"><Send size={16} /></button>
+                </div>
               </div>
             )}
           </div>
