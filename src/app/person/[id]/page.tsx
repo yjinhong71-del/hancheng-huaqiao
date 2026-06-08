@@ -113,7 +113,7 @@ export default function PersonDetailPage() {
       <AnimatedSection>
         <div className="glass-card rounded-3xl p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row gap-6">
-            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl bg-black/[0.03] overflow-hidden shrink-0">
+            <div className="w-32 h-32 sm:w-48 sm:h-48 rounded-2xl bg-black/[0.03] overflow-hidden shrink-0">
               {p.photo_url ? <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" /> :
                 <div className="w-full h-full flex items-center justify-center"><span className="text-4xl text-neutral-400 font-bold">{p.name.charAt(0)}</span></div>}
             </div>
@@ -155,7 +155,7 @@ export default function PersonDetailPage() {
           <AnimatedSection delay={0.1}>
             <div className="mt-6 glass-card rounded-3xl p-5">
               <h2 className="text-sm font-semibold text-neutral-700 mb-4">{t('person.dimensions')}</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
                 {['appearance', 'personality', 'grades', 'talent', 'popularity'].map(d => (
                   <div key={d} className="text-center">
                     <div className="text-xs text-neutral-500 mb-1">{dlabel(d)}</div>

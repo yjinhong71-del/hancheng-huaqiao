@@ -17,7 +17,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${inter.className} `}>
         <LanguageProvider>
           <Navigation />
-          <main className="pt-20">{children}</main>
+          <main className="pt-20 pb-safe">{children}</main>
         </LanguageProvider>
       </body>
     </html>

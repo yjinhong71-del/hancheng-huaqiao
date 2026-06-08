@@ -73,7 +73,7 @@ export default function AdminPeoplePage() {
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input type="text" placeholder="搜索姓名或班级..." value={sq} onChange={e => setSq(e.target.value)}
-              className="w-48 pl-9 pr-3 py-2 text-sm glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
+              className="w-full sm:w-48 pl-9 pr-3 py-2 text-sm glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
           </div>
           <div className="flex bg-black/[0.04] rounded-full p-0.5">
             {['all', 'student', 'teacher'].map(tp => (

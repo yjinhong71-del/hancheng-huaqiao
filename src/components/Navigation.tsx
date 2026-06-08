@@ -61,7 +61,7 @@ export default function Navigation() {
   return (
     <>
       <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 transition-colors duration-500 ${scrolled ? 'glass-nav rounded-full shadow-[0_0_0_0.5px_rgba(0,0,0,0.06),0_2px_12px_rgba(0,0,0,0.08)]' : 'bg-transparent'}`}>
+        className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)] transition-colors duration-500 glass-nav rounded-full ${scrolled ? 'shadow-[0_0_0_0.5px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.12)]' : 'shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.03)]'}`}>
         <div className="px-4">
           <div className="flex items-center justify-between h-11 gap-2">
             <Link href="/" className="flex items-center gap-2 group shrink-0">
@@ -118,7 +118,7 @@ export default function Navigation() {
               </Link>
             </div>
 
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 text-neutral-600 hover:text-neutral-900 transition-colors">
+            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-3 min-h-[44px] min-w-[44px] text-neutral-600 hover:text-neutral-900 transition-colors">
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
@@ -135,21 +135,21 @@ export default function Navigation() {
                 const active = pathname === l.href;
                 return (
                   <Link key={l.href} href={l.href}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${active ? 'text-neutral-900 bg-black/[0.04]' : 'text-neutral-500 hover:text-neutral-900 hover:bg-black/[0.02]'}`}>
+                    className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${active ? 'text-neutral-900 bg-black/[0.04]' : 'text-neutral-500 hover:text-neutral-900 hover:bg-black/[0.02]'}`}>
                     {I && <I size={18} />}{l.label}
                   </Link>
                 );
               })}
               {user?.loggedIn ? (
-                <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+                <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
                   <LogOut size={18} />{t('nav.logout')} ({user.name})
                 </button>
               ) : (
-                <Link href="/login" className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-black/[0.02] transition-colors">
+                <Link href="/login" className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-black/[0.02] transition-colors">
                   <LogIn size={18} />{t('nav.login')}
                 </Link>
               )}
-              <Link href="/admin/login" className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-black/[0.02] transition-colors">
+              <Link href="/admin/login" className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-black/[0.02] transition-colors">
                 <Shield size={18} />{t('nav.admin')}
               </Link>
               <div className="border-t border-black/[0.04] pt-2 mt-2">
