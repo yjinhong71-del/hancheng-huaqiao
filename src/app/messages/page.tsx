@@ -65,12 +65,26 @@ export default function MessagesPage() {
           }, ...prev]);
           setTimeout(() => {
             setActiveChat(withId);
-            setMobileView('chat');
-          }, 100);
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const withId = p.get('with');
     if (!withId || loading) return;
+    const exists = conversations.find(c => c.partner_id === withId);
+    if (exists) {
+      setActiveChat(withId);
+      fetchMessages(withId);
+      setMobileView('chat');
+    } else {
+      fetch(`/api/people/${withId}`).then(r => r.json()).then(person => {
+        if (person.name) {
+          setConversations(prev => [{ partner_id: withId, partner_name: person.name, partner_photo: person.photo_url || '', last_message: '', last_time: '', last_sender_id: '', unread: 0 }, ...prev]);
+          setActiveChat(withId);
+          fetchMessages(withId);
+          setMobileView('chat');
+        }
       });
     }
-  }, [conversations]);
+  }, [conversations, loading]);
 
   // SSE connection
   useEffect(() => {
