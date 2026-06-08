@@ -7,7 +7,7 @@ export async function GET() {
   if (!user || user.status !== 'approved') {
     return NextResponse.json({ error: '請登錄' }, { status: 401 });
   }
-  const db = getDb();
+  const db = getDb(); try { db.exec("ALTER TABLE messages ADD COLUMN is_anonymous INTEGER DEFAULT 0"); } catch {};
 
   // Normal conversations (non-anonymous)
   const conversations = db.prepare(`

@@ -10,7 +10,7 @@ export async function PUT(r: NextRequest) {
   const withId = new URL(r.url).searchParams.get('with');
   if (!withId) return NextResponse.json({ error: '缺少with參數' }, { status: 400 });
 
-  const db = getDb();
+  const db = getDb(); try { db.exec("ALTER TABLE messages ADD COLUMN is_anonymous INTEGER DEFAULT 0"); } catch {};
   db.prepare('UPDATE messages SET read=1 WHERE sender_id=? AND receiver_id=? AND read=0')
     .run(withId, user.personId);
 

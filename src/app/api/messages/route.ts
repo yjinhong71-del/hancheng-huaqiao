@@ -13,7 +13,7 @@ export async function POST(r: NextRequest) {
   if (!receiver_id || !content?.trim()) {
     return NextResponse.json({ error: '缺少參數' }, { status: 400 });
   }
-  const db = getDb();
+  const db = getDb(); try { db.exec("ALTER TABLE messages ADD COLUMN is_anonymous INTEGER DEFAULT 0"); } catch {};
 
   let actualReceiverId = receiver_id;
   if (receiver_id === '__anonymous__') {
@@ -47,7 +47,7 @@ export async function GET(r: NextRequest) {
   const withId = new URL(r.url).searchParams.get('with');
   if (!withId) return NextResponse.json({ error: '缺少with參數' }, { status: 400 });
 
-  const db = getDb();
+  const db = getDb(); try { db.exec("ALTER TABLE messages ADD COLUMN is_anonymous INTEGER DEFAULT 0"); } catch {};
 
   if (withId === '__anonymous__') {
     const msgs = db.prepare("SELECT m.*, '匿名' as sender_name FROM messages m WHERE m.receiver_id=? AND m.is_anonymous=1 UNION ALL SELECT m.*, p.name as sender_name FROM messages m JOIN people p ON m.sender_id=p.id WHERE m.sender_id=? AND m.receiver_id IN (SELECT sender_id FROM messages WHERE receiver_id=? AND is_anonymous=1) ORDER BY created_at DESC LIMIT 100").all(user.personId, user.personId, user.personId) as any[];
