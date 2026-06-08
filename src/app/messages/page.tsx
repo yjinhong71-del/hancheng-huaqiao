@@ -22,12 +22,13 @@ export default function MessagesPage() {
 
   const fetchUser = useCallback(async () => {
     const r = await fetch('/api/auth/user-session');
-    if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
-    if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
+    if (r.ok) {
       const d = await r.json();
       if (!d.loggedIn) { router.push('/login'); return; }
       setUser(d);
-    } else { router.push('/login'); }
+    } else {
+      router.push('/login');
+    }
   }, [router]);
 
   const fetchConversations = useCallback(async () => {
@@ -111,15 +112,21 @@ export default function MessagesPage() {
   };
 
   const sendMessage = async () => {
-    if (!input.trim()) return; if (!activeChat) { alert('請先選擇對話'); return; }
+    if (!input.trim()) return;
+    if (!activeChat) { alert('请先选择对话'); return; }
     const r = await fetch('/api/messages', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ receiver_id: activeChat, content: input.trim(), is_anonymous: isAnonymous ? 1 : 0 })
     });
-    if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
-    if (!r.ok) { const d = await r.json(); alert(d.error || '發送失敗'); return; }
-    const msg = await r.json();
+    if (r.ok) {
+      const msg = await r.json();
+      setMessages(prev => [...prev, msg]);
+      setInput('');
       fetchConversations();
+    } else {
+      const d = await r.json();
+      alert(d.error || '发送失败');
     }
   };
 
@@ -136,7 +143,7 @@ export default function MessagesPage() {
       {conversations.length === 0 ? (
         <div className="p-6 text-center">
           <MessageCircle size={32} className="mx-auto text-neutral-300 mb-2" />
-          <p className="text-xs text-neutral-500">暫無對話</p>
+          <p className="text-xs text-neutral-500">暂无对话</p>
         </div>
       ) : (
         conversations.map(c => (
@@ -150,7 +157,7 @@ export default function MessagesPage() {
                 <span className="text-sm font-semibold text-black truncate">{c.partner_name}</span>
                 {c.unread > 0 && <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0 ml-1">{c.unread}</span>}
               </div>
-              <p className="text-xs text-neutral-500 truncate mt-0.5">{c.last_sender_id === user?.personId ? '你: ' : ''}{c.last_message || '開始聊天...'}</p>
+              <p className="text-xs text-neutral-500 truncate mt-0.5">{c.last_sender_id === user?.personId ? '你: ' : ''}{c.last_message || '开始聊天...'}</p>
             </div>
           </button>
         ))
@@ -158,16 +165,31 @@ export default function MessagesPage() {
     </div>
   );
 
+  const ChatInput = () => (
+    <>
+      <input type="text" value={input} onChange={e => setInput(e.target.value)}
+        onCompositionStart={() => { composingRef.current = true; }}
+        onCompositionEnd={() => { composingRef.current = false; }}
+        onKeyDown={handleKeyDown}
+        placeholder={activeChat === '__anonymous__' ? '回复匿名消息...' : '输入消息...'}
+        className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
+      <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
+        <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="w-3.5 h-3.5 rounded" />匿名
+      </label>
+      <button onClick={sendMessage} className="p-2.5 sm:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors active:scale-[0.95]"><Send size={16} /></button>
+    </>
+  );
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
       <AnimatedSection>
-        <h1 className="text-2xl font-bold text-black mb-6 tracking-tight">私訊</h1>
+        <h1 className="text-2xl font-bold text-black mb-6 tracking-tight">私信</h1>
       </AnimatedSection>
       <AnimatedSection delay={0.1}>
         <div className="glass-card rounded-3xl overflow-hidden" style={{ height: 'calc(100vh - 220px)', minHeight: '500px' }}>
           <div className="hidden md:flex h-full">
             <div className="w-[280px] shrink-0 border-r border-black/[0.06] flex flex-col">
-              <div className="p-4 border-b border-black/[0.04]"><h3 className="text-sm font-semibold text-neutral-700">對話</h3></div>
+              <div className="p-4 border-b border-black/[0.04]"><h3 className="text-sm font-semibold text-neutral-700">对话</h3></div>
               <ConversationList />
             </div>
             <div className="flex-1 flex flex-col min-w-0">
@@ -182,24 +204,13 @@ export default function MessagesPage() {
                     ))}
                     <div ref={messagesEnd} />
                   </div>
-                  <div className="p-4 border-t border-black/[0.04] flex items-center gap-2">
-                    <input type="text" value={input} onChange={e => setInput(e.target.value)}
-                      onCompositionStart={() => { composingRef.current = true; }}
-                      onCompositionEnd={() => { composingRef.current = false; }}
-                      onKeyDown={handleKeyDown}
-                      placeholder={activeChat === '__anonymous__' ? '回覆匿名訊息...' : '輸入訊息...'}
-                      className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
-                    <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
-                      <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="w-3.5 h-3.5 rounded" />匿名
-                    </label>
-                    <button onClick={sendMessage} className="p-2.5 sm:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors active:scale-[0.95]"><Send size={16} /></button>
-                  </div>
+                  <div className="p-4 border-t border-black/[0.04] flex items-center gap-2"><ChatInput /></div>
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
                     <MessageCircle size={48} className="mx-auto text-neutral-300 mb-3" />
-                    <p className="text-sm text-neutral-500">選擇一個對話開始聊天</p>
+                    <p className="text-sm text-neutral-500">选择一个对话开始聊天</p>
                   </div>
                 </div>
               )}
@@ -208,7 +219,7 @@ export default function MessagesPage() {
           <div className="md:hidden h-full flex flex-col">
             {mobileView === 'list' ? (
               <>
-                <div className="p-4 border-b border-black/[0.04]"><h3 className="text-sm font-semibold text-neutral-700">對話</h3></div>
+                <div className="p-4 border-b border-black/[0.04]"><h3 className="text-sm font-semibold text-neutral-700">对话</h3></div>
                 <ConversationList />
               </>
             ) : (
@@ -225,18 +236,7 @@ export default function MessagesPage() {
                   ))}
                   <div ref={messagesEnd} />
                 </div>
-                <div className="p-3 border-t border-black/[0.04] flex items-center gap-2 pb-safe">
-                  <input type="text" value={input} onChange={e => setInput(e.target.value)}
-                    onCompositionStart={() => { composingRef.current = true; }}
-                    onCompositionEnd={() => { composingRef.current = false; }}
-                    onKeyDown={handleKeyDown}
-                    placeholder={activeChat === '__anonymous__' ? '回覆匿名訊息...' : '輸入訊息...'}
-                    className="flex-1 px-4 py-2.5 text-sm bg-white/60 border border-black/[0.06] rounded-full focus:outline-none focus:ring-2 focus:ring-black/[0.06] transition-all" />
-                  <label className="flex items-center gap-1 text-[11px] text-neutral-500 cursor-pointer shrink-0">
-                    <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="w-3.5 h-3.5 rounded" />匿名
-                  </label>
-                  <button onClick={sendMessage} className="p-2.5 sm:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors active:scale-[0.95]"><Send size={16} /></button>
-                </div>
+                <div className="p-3 border-t border-black/[0.04] flex items-center gap-2 pb-safe"><ChatInput /></div>
               </div>
             )}
           </div>
